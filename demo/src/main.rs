@@ -2,7 +2,7 @@
 
 use anyhow::{Context as _, Result};
 use bevy::prelude::*;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 use std::path::PathBuf;
 
 mod balls;
@@ -18,6 +18,9 @@ fn main() -> Result<()> {
             DefaultPlugins,
             MeshPickingPlugin,
             // Debug window
+            EguiPlugin {
+                enable_multipass_for_primary_context: true,
+            },
             WorldInspectorPlugin::new(),
             // Basic setup and movement
             camera::CameraPlugin,

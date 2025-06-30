@@ -4,7 +4,7 @@ use std::{
 };
 
 use anyhow::{Context as _, Result};
-use bevy::{prelude::*, utils::HashMap};
+use bevy::{platform::collections::HashMap, prelude::*};
 use bevy_materialx_importer::{MaterialX, MaterialXPlugin};
 
 pub struct LoadFilesPlugin;

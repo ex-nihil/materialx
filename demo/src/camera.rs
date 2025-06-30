@@ -51,7 +51,9 @@ fn move_camera(
     mut camera: Query<(Entity, &mut Transform), With<Camera3d>>,
     input: Res<ButtonInput<KeyCode>>,
 ) {
-    let (_camera, mut transform) = camera.single_mut();
+    let Ok((_camera, mut transform)) = camera.single_mut() else {
+        return;
+    };
     if input.pressed(KeyCode::KeyW) {
         transform.translation = transform.translation + transform.local_y() * 0.1;
     }

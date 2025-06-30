@@ -136,19 +136,19 @@ fn spawn_balls(
             ))
             .observe(
                 |trigger: Trigger<Pointer<Over>>, mut events: EventWriter<HoverBall>| {
-                    events.send(HoverBall(trigger.event().target));
+                    events.write(HoverBall(trigger.event().target));
                 },
             )
             .observe(
                 |_trigger: Trigger<Pointer<Out>>, mut events: EventWriter<BlurBall>| {
-                    events.send(BlurBall);
+                    events.write(BlurBall);
                 },
             )
             .observe(
                 |mut trigger: Trigger<Pointer<Click>>, mut events: EventWriter<SelectedBall>| {
                     trigger.propagate(false);
                     let click_event: &Pointer<Click> = trigger.event();
-                    events.send(SelectedBall(click_event.target));
+                    events.write(SelectedBall(click_event.target));
                 },
             );
     }
@@ -195,7 +195,7 @@ fn select_ball(
 
 fn escape(mut events: EventWriter<DeselectedBalls>, input: Res<ButtonInput<KeyCode>>) {
     if input.just_pressed(KeyCode::Escape) {
-        events.send(DeselectedBalls);
+        events.write(DeselectedBalls);
     }
 }
 
@@ -203,7 +203,10 @@ fn deselect_balls(
     mut commands: Commands,
     mut camera: Query<(Entity, &Transform), (With<Camera>, Without<Ball>)>,
 ) {
-    let (camera, transform) = camera.single_mut();
+    let Ok((camera, transform)) = camera.single_mut() else {
+        warn!("No camera found to deselect balls");
+        return;
+    };
 
     commands.entity(camera).insert(transform.ease_to(
         transform.with_translation(CAMERA_START.translation),
@@ -238,11 +241,19 @@ fn update_info_text(
 ) {
     for event in events.read() {
         if let Ok(ball) = balls.get(event.0) {
-            text.single_mut().0 = format!("{}\n{}", ball.name, ball.label);
+            let Ok(mut text) = text.single_mut() else {
+                warn!(entity=%event.0, "Info text not found");
+                continue;
+            };
+            text.0 = format!("{}\n{}", ball.name, ball.label);
         }
     }
 }
 
 fn reset_info_text(mut text: Query<&mut Text, With<MaterialName>>) {
-    text.single_mut().0 = "\n".to_string();
+    let Ok(mut text) = text.single_mut() else {
+        warn!("Info text not found for reset");
+        return;
+    };
+    text.0 = "\n".to_string();
 }
